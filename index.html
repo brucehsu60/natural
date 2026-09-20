@@ -65,6 +65,10 @@
     .material-box{background:#f8fafc;border:1px solid var(--line)}
     .hint-box{background:#fffbeb;border:1px solid #fde68a}
     .exp-box{background:#f0fdf4;border:1px solid #bbf7d0}
+    .exp-box .section-title,.rubric-box .section-title,.hint-box .section-title{font-weight:800;color:#0f172a}
+    .exp-box .markdown-heading{font-weight:800;font-size:1.04em;color:#0f172a;margin-top:.45rem}
+    .exp-box .katex-display,.material-box .katex-display,.question-text .katex-display{margin:.45em 0!important;overflow-x:auto;overflow-y:hidden}
+    .exp-box br+br+br{display:none}
     .rubric-box{background:#eff6ff;border:1px solid #bfdbfe}
     .wrong-box{background:#fff1f2;border:1px solid #fecdd3}
     .question-image{margin:12px 0;text-align:center}
@@ -189,13 +193,20 @@
   </main>
 
   <script>
-    // ★ 修正 1：只載入 115.json，且將 RATE_FILES 設為空，避免 404 報錯
-    const DATA_FILES = ["data/115.json"];
-    const RATE_FILES = [];
-    
+    const DATA_FILES = ["data/115.json","data/114.json","data/113.json","data/112.json","data/111.json"];
+    const RATE_FILES = ["data/115_rates.json"];
     const FILTERS = {
-      examType:"all", year:"all", category:"all", chapter:"all", type:"all",
-      ability:"all", rate:"all", rateMin:null, rateMax:null, status:"all", keyword:""
+      examType:"all",
+      year:"all",
+      category:"all",
+      chapter:"all",
+      type:"all",
+      ability:"all",
+      rate:"all",
+      rateMin:null,
+      rateMax:null,
+      status:"all",
+      keyword:""
     };
     const TAXONOMY = {
       "物理":["科學與測量","物質與基本力","物體的運動","電與磁","能量與量子"],
@@ -244,26 +255,16 @@
       bindEvents();
       await loadQuestions();
     }
-    
     async function loadQuestions(){
       const stamp = Date.now();
       const results = await Promise.all(DATA_FILES.map(file =>
         fetch(`${file}?t=${stamp}`).then(r => r.ok ? r.json() : null).catch(() => null)
       ));
-      
-      // ★ 修正 2：修改 flatMap，完美支援新版自然科直接是「陣列」的格式
-      allQuestions = results.flatMap(data => {
-        if (!data) return [];
-        if (Array.isArray(data)) return data; // 支援新版直接是陣列
-        if (Array.isArray(data.questions)) return data.questions; // 支援舊版
-        return [];
-      });
-
+      allQuestions = results.flatMap(data => Array.isArray(data?.questions) ? data.questions : []);
       await mergeRateFiles(stamp);
       sortQuestions();
       renderQuestions(true);
     }
-
     async function mergeRateFiles(stamp){
       const results = await Promise.all(RATE_FILES.map(file =>
         fetch(`${file}?t=${stamp}`).then(r => r.ok ? r.json() : null).catch(() => null)
@@ -281,7 +282,6 @@
         }
       });
     }
-
     function sortQuestions(){
       const rangeActive = FILTERS.rateMin !== null || FILTERS.rateMax !== null;
       allQuestions.sort((a,b) => {
@@ -289,7 +289,6 @@
         return Number(normYear(b.year))-Number(normYear(a.year)) || numericQuestionNumber(a)-numericQuestionNumber(b);
       });
     }
-
     function setupFilters(){
       makeButtons("examTypeButtons","examType");
       makeButtons("yearButtons","year");
@@ -300,23 +299,20 @@
       makeButtons("rateButtons","rate");
       makeButtons("statusButtons","status");
     }
-
     function makeButtons(containerId, filter){
       const box = document.getElementById(containerId);
       box.innerHTML = CHOICES[filter].map(value => `<button class="tag-btn ${value==="all"?"active":""} ${rateClass(value)}" data-filter="${filter}" data-value="${esc(value)}">${esc(LABELS[value] || value)}</button>`).join("");
     }
-
     function rateClass(value){
       if(value === "easy") return "rate-easy";
       if(value === "mid") return "rate-mid";
       if(value === "hard") return "rate-hard";
       return "";
     }
-
     function bindEvents(){
       document.body.addEventListener("click", e => {
         const tag = e.target.closest(".tag-btn");
-        if(tag && tag.id !== "clearRateRangeBtn" && tag.id !== "applyRateRangeBtn"){
+        if(tag){
           setFilter(tag.dataset.filter, tag.dataset.value);
           return;
         }
@@ -341,7 +337,6 @@
       document.getElementById("applyRateRangeBtn").addEventListener("click", applyRateRange);
       document.getElementById("clearRateRangeBtn").addEventListener("click", clearRateRange);
     }
-
     function setFilter(filter, value){
       FILTERS[filter] = value;
       if(filter === "category"){
@@ -359,7 +354,6 @@
       sortQuestions();
       renderQuestions(true);
     }
-
     function applyRateRange(){
       const minRaw = document.getElementById("rateMinInput").value;
       const maxRaw = document.getElementById("rateMaxInput").value;
@@ -376,7 +370,6 @@
       sortQuestions();
       renderQuestions(true);
     }
-
     function clearRateRange(){
       FILTERS.rate = "all";
       FILTERS.rateMin = null;
@@ -388,25 +381,21 @@
       sortQuestions();
       renderQuestions(true);
     }
-
     function renderChapterButtons(category){
       const values = category === "all" ? CHOICES.chapter : ["all", ...(TAXONOMY[category] || [])];
       const box = document.getElementById("chapterButtons");
       box.innerHTML = values.map(value => `<button class="tag-btn ${value==="all"?"active":""}" data-filter="chapter" data-value="${esc(value)}">${esc(LABELS[value] || value)}</button>`).join("");
     }
-
     function matchArray(value, target){
       const arr = Array.isArray(value) ? value : [value].filter(Boolean);
       return arr.includes(target);
     }
-
     function questionTextBag(q){
       return [
         q.id,q.title,q.question,q.material,q.explanation,q.hint,
         q.category,q.chapter,...subjectList(q),...(q.unit||[]),...skillList(q),...(q.commonErrors||[])
       ].join(" ").toLowerCase();
     }
-
     function examKind(q){
       const raw = String(q.examCategory || q.examType || q.exam || "");
       if(raw.includes("分科")) return "分科";
@@ -415,30 +404,25 @@
       if(raw.includes("學測")) return "學測";
       return "";
     }
-
     function subjectList(q){
       if(Array.isArray(q.subject)) return q.subject.map(s => s === "地球科學" ? "地科" : s);
       if(q.category) return [q.category === "地球科學" ? "地科" : q.category];
       return [];
     }
-
     function skillList(q){
       return Array.isArray(q.skills) ? q.skills : (Array.isArray(q.abilityTags) ? q.abilityTags : []);
     }
-
     function numericQuestionNumber(q){
       const raw = q.questionNumber ?? q.q_num ?? "";
       const found = String(raw).match(/\d+/);
       return found ? Number(found[0]) : 9999;
     }
-
     function rateOf(q){
       const raw = q.correct_rate ?? q.correctRate ?? q.P;
       if(raw === null || raw === undefined || raw === "") return null;
       const n = Number(raw);
       return Number.isFinite(n) ? n : null;
     }
-
     function matchRate(q){
       const rate = rateOf(q);
       if(FILTERS.rate === "all" && FILTERS.rateMin === null && FILTERS.rateMax === null) return true;
@@ -450,7 +434,6 @@
       if(FILTERS.rateMax !== null && rate > FILTERS.rateMax) return false;
       return true;
     }
-
     function applyFilters(){
       const hideGreen = document.getElementById("hideGreen").checked;
       const examMode = document.getElementById("examMode").checked;
@@ -470,7 +453,6 @@
         return true;
       });
     }
-
     function renderQuestions(reset=false){
       if(reset){
         applyFilters();
@@ -480,7 +462,6 @@
       updateStats();
       renderNext();
     }
-
     function renderNext(){
       const container = document.getElementById("quizContainer");
       if(!filteredQuestions.length){
@@ -500,7 +481,6 @@
         renderMathInElement(container,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}]});
       }
     }
-
     function renderCard(q){
       const status = progress[q.id] || "white";
       const card = document.createElement("article");
@@ -538,30 +518,37 @@
       `;
       return card;
     }
-
     function statusButton(id, status, icon){
       const active = (progress[id] || "white") === status ? "active" : "";
       return `<button class="status-btn ${active}" onclick="setStatus('${esc(id)}','${status}')" title="${esc(LABELS[status])}">${icon}</button>`;
     }
-
-    function formatText(text){
-      return esc(text).replace(/\*\*(.*?)\*\*/g,"<b>$1</b>").replace(/\n/g,"<br>");
+    function normalizeDisplayText(text){
+      return String(text ?? "")
+        .replace(/\\n/g,"\n")
+        .replace(/\rightarrow/g,"\\rightarrow")
+        .replace(/(^|[^\\])ightarrow/g,"$1\\rightarrow")
+        .replace(/\n{3,}/g,"\n\n")
+        .replace(/\n+\s*(\$\$)/g,"\n$1")
+        .replace(/(\$\$)\s*\n+/g,"$1\n");
     }
-
+    function formatText(text){
+      return esc(normalizeDisplayText(text))
+        .replace(/^#{1,4}\s*(.+)$/gm,'<span class="markdown-heading">$1</span>')
+        .replace(/【([^】]+)】/g,'<strong class="section-title">【$1】</strong>')
+        .replace(/\*\*(.*?)\*\*/g,"<b>$1</b>")
+        .replace(/\n/g,"<br>");
+    }
     function formatAnswer(answer){
       if(Array.isArray(answer)) return esc(answer.join(""));
       return esc(answer);
     }
-
     function renderImages(q){
       const imgs = q.images || q.diagram || q.image || [];
       const arr = Array.isArray(imgs) ? imgs : [imgs].filter(Boolean);
       return arr.map(src => `<div class="question-image"><img src="${esc(src)}" alt="題目附圖"></div>`).join("");
     }
-
     function renderAnswerArea(q, feedbackId){
       if(q.type === "單選題"){
-        // ★ 修正 3：對答案機制修改為 startsWith，解決含有選項文字時判斷錯誤的問題
         return (q.options||[]).map(opt => `<button class="option-btn" onclick="checkSingle(this,'${encodeURIComponent(String(q.answer))}','${feedbackId}')" data-val="${encodeURIComponent(opt)}">${formatText(opt)}</button>`).join("");
       }
       if(q.type === "多選題"){
@@ -572,36 +559,31 @@
         <textarea class="short-input" placeholder="可先在這裡寫下自己的推論、計算或非選題答案。"></textarea>
         <div class="action-row"><button class="action-btn" data-reveal="${feedbackId}">看答案／詳解／評分標準</button></div>`;
     }
-
-    // ★ 修正 3：改用 startsWith 判斷
     function checkSingle(btn, correctEnc, feedbackId){
-      const correctAns = decodeURIComponent(correctEnc).trim(); 
+      const correct = decodeURIComponent(correctEnc);
       const buttons = btn.parentElement.querySelectorAll(".option-btn");
       buttons.forEach(b => {
         b.disabled = true;
-        const val = decodeURIComponent(b.dataset.val).trim();
-        if(val.startsWith(correctAns)) b.classList.add("correct");
+        const val = decodeURIComponent(b.dataset.val);
+        if(val === correct) b.classList.add("correct");
       });
-      const selectedVal = decodeURIComponent(btn.dataset.val).trim();
-      if(!selectedVal.startsWith(correctAns)) btn.classList.add("wrong");
+      if(decodeURIComponent(btn.dataset.val) !== correct) btn.classList.add("wrong");
       document.getElementById(feedbackId).style.display = "block";
     }
-
     function checkMulti(btn, qId, answerEnc){
       const answers = JSON.parse(decodeURIComponent(answerEnc));
       const box = btn.closest(".options");
       box.querySelectorAll(".multi-btn").forEach(b => {
         b.disabled = true;
-        const val = decodeURIComponent(b.dataset.val).trim();
+        const val = decodeURIComponent(b.dataset.val);
         const selected = b.classList.contains("selected");
-        const isCorrect = answers.some(ans => val.startsWith(ans.trim()));
-        if(isCorrect) b.classList.add("correct");
-        if(selected && !isCorrect) b.classList.add("wrong");
+        const correct = answers.includes(val);
+        if(correct) b.classList.add("correct");
+        if(selected && !correct) b.classList.add("wrong");
       });
       btn.style.display = "none";
       document.getElementById(`feedback-${qId}`).style.display = "block";
     }
-
     function setStatus(id, status){
       progress[id] = status;
       localStorage.setItem("naturalProgress", JSON.stringify(progress));
@@ -614,7 +596,6 @@
       updateStats();
       if(document.getElementById("hideGreen").checked && status === "green") renderQuestions(true);
     }
-
     function updateStats(){
       const counts = {red:0,yellow:0,green:0,white:0};
       filteredQuestions.forEach(q => counts[progress[q.id] || "white"]++);
@@ -625,7 +606,6 @@
       document.getElementById("countGreen").textContent = counts.green;
       document.getElementById("countWhite").textContent = counts.white;
     }
-
     function exportProgress(){
       const blob = new Blob([JSON.stringify({schemaVersion:1,type:"naturalProgress",progress},null,2)],{type:"application/json"});
       const a = document.createElement("a");
@@ -634,7 +614,6 @@
       a.click();
       URL.revokeObjectURL(a.href);
     }
-
     function importProgress(e){
       const file = e.target.files?.[0];
       if(!file) return;
@@ -650,7 +629,6 @@
       };
       reader.readAsText(file);
     }
-
     function clearProgress(){
       if(!confirm("確定清除全部自然科紅黃綠紀錄？")) return;
       progress = {};
