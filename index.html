@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>學測自然歷屆題庫訓練室 V1</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="boot()"></script>
+  <style>
+    :root{
+      --bg:#f4f7fb;--card:#fff;--ink:#172033;--muted:#64748b;--line:#dbe4ef;
+      --brand:#2563eb;--brand2:#0f766e;--ok:#16a34a;--warn:#eab308;--bad:#ef4444;
+      --physics:#7c3aed;--chem:#ea580c;--bio:#059669;--earth:#0284c7;--cross:#475569;
+      --shadow:0 12px 32px rgba(15,23,42,.08);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#eef6ff 0,#f8fafc 280px,var(--bg) 100%);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    header{max-width:1180px;margin:0 auto;padding:34px 18px 20px}
+    h1{margin:0 0 10px;font-size:clamp(1.9rem,4vw,3.2rem);letter-spacing:.02em}
+    .subtitle{color:var(--muted);font-size:1.02rem;line-height:1.7;max-width:880px}
+    .layout{max-width:1180px;margin:0 auto;padding:0 18px 46px}
+    .panel,.question-card,.stats{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+    .panel{padding:18px;margin-bottom:16px}
+    .panel-title{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-weight:900;color:#0f172a}
+    .filter-row{display:flex;gap:10px;align-items:flex-start;margin:12px 0;flex-wrap:wrap}
+    .filter-label{width:92px;flex:0 0 92px;color:#334155;font-weight:900;padding-top:7px}
+    .filter-buttons{display:flex;gap:8px;flex-wrap:wrap;flex:1}
+    button{font:inherit}
+    .tag-btn{border:1px solid var(--line);background:#fff;color:#334155;border-radius:999px;padding:7px 13px;cursor:pointer;font-weight:800;transition:.15s}
+    .tag-btn:hover{transform:translateY(-1px);border-color:var(--brand)}
+    .tag-btn.active{background:var(--brand);border-color:var(--brand);color:#fff}
+    .tag-btn[data-filter="subject"].active[data-value="物理"]{background:var(--physics);border-color:var(--physics)}
+    .tag-btn[data-filter="subject"].active[data-value="化學"]{background:var(--chem);border-color:var(--chem)}
+    .tag-btn[data-filter="subject"].active[data-value="生物"]{background:var(--bio);border-color:var(--bio)}
+    .tag-btn[data-filter="subject"].active[data-value="地球科學"]{background:var(--earth);border-color:var(--earth)}
+    .tag-btn[data-filter="subject"].active[data-value="跨科"]{background:var(--cross);border-color:var(--cross)}
+    .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .toggle{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;color:#334155;font-weight:800}
+    .stats{padding:14px 16px;margin-bottom:14px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .stats-main{font-size:1.1rem;font-weight:900}
+    .stats-details{display:flex;gap:14px;flex-wrap:wrap;color:#334155}
+    .question-card{position:relative;padding:18px;margin:16px 0;overflow:hidden}
+    .question-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;background:#cbd5e1}
+    .card-status-red::before{background:var(--bad)}
+    .card-status-yellow::before{background:var(--warn)}
+    .card-status-green::before{background:var(--ok)}
+    .status-selector{position:absolute;right:14px;top:12px;display:flex;gap:6px}
+    .status-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;opacity:.62}
+    .status-btn.active{opacity:1;outline:3px solid rgba(15,23,42,.12)}
+    .badge-group{display:flex;gap:7px;flex-wrap:wrap;padding-right:140px;margin-bottom:12px}
+    .badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-size:.82rem;font-weight:900;background:#eef2ff;color:#334155;border:1px solid rgba(148,163,184,.35)}
+    .badge.clickable{cursor:pointer}
+    .badge-year{background:#e0f2fe;color:#075985}
+    .badge-subject-物理{background:#ede9fe;color:#5b21b6}
+    .badge-subject-化學{background:#ffedd5;color:#9a3412}
+    .badge-subject-生物{background:#dcfce7;color:#166534}
+    .badge-subject-地球科學{background:#e0f2fe;color:#075985}
+    .badge-subject-跨科{background:#e2e8f0;color:#334155}
+    .question-text{font-size:1.08rem;line-height:1.85;margin:8px 0 12px;white-space:pre-wrap}
+    .material-box,.hint-box,.exp-box,.rubric-box,.wrong-box{border-radius:14px;padding:13px 14px;margin:11px 0;line-height:1.75}
+    .material-box{background:#f8fafc;border:1px solid var(--line)}
+    .hint-box{background:#fffbeb;border:1px solid #fde68a}
+    .exp-box{background:#f0fdf4;border:1px solid #bbf7d0}
+    .rubric-box{background:#eff6ff;border:1px solid #bfdbfe}
+    .wrong-box{background:#fff1f2;border:1px solid #fecdd3}
+    .question-image{margin:12px 0;text-align:center}
+    .question-image img{max-width:100%;border-radius:14px;border:1px solid var(--line);background:#fff}
+    .options{display:grid;gap:9px;margin:12px 0}
+    .option-btn{width:100%;text-align:left;border:1.5px solid var(--line);border-radius:12px;background:#fff;padding:12px 13px;cursor:pointer;line-height:1.55}
+    .option-btn:hover{border-color:var(--brand);background:#f8fbff}
+    .option-btn.selected{border-color:var(--brand);background:#eff6ff}
+    .option-btn.correct{border-color:var(--ok);background:#dcfce7}
+    .option-btn.wrong{border-color:var(--bad);background:#fee2e2}
+    .action-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .action-btn,.data-btn{border:0;background:var(--brand);color:#fff;border-radius:11px;padding:9px 14px;font-weight:900;cursor:pointer}
+    .action-btn.secondary,.data-btn.secondary{background:#475569}
+    .action-btn.ghost,.data-btn.ghost{background:#fff;color:#334155;border:1px solid var(--line)}
+    .feedback-area{display:none;margin-top:12px}
+    .short-input{width:100%;min-height:96px;border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;line-height:1.7}
+    .empty-state{text-align:center;color:var(--muted);padding:42px;background:#fff;border:1px dashed var(--line);border-radius:18px}
+    .data-management{margin-top:24px;text-align:center;color:var(--muted)}
+    .load-more{display:block;margin:18px auto 0}
+    .small-note{font-size:.88rem;color:var(--muted)}
+    .pill-input{border:1px solid var(--line);border-radius:999px;padding:8px 12px;min-width:220px}
+    @media(max-width:720px){
+      .filter-label{width:100%;flex-basis:100%;padding-top:0}
+      .badge-group{padding-right:0;margin-top:34px}
+      .status-selector{left:14px;right:auto}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>學測自然歷屆題庫訓練室 V1</h1>
+    <div class="subtitle">
+      這是可放到 GitHub Pages 的自然科歷屆網站雛形：保留數學站的題庫篩選與紅黃綠熟練度，加入英文閱讀式題組材料、國寫式提示／評分規準，適合逐年匯入 111～115 學測自然。
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel">
+      <div class="panel-title">🔎 題庫篩選</div>
+
+      <div class="filter-row">
+        <span class="filter-label">年份：</span>
+        <div class="filter-buttons" id="yearButtons"></div>
+      </div>
+
+      <div class="filter-row">
+        <span class="filter-label">科目：</span>
+        <div class="filter-buttons" id="subjectButtons"></div>
+      </div>
+
+      <div class="filter-row">
+        <span class="filter-label">題型：</span>
+        <div class="filter-buttons" id="typeButtons"></div>
+      </div>
+
+      <div class="filter-row">
+        <span class="filter-label">能力：</span>
+        <div class="filter-buttons" id="abilityButtons"></div>
+      </div>
+
+      <div class="filter-row">
+        <span class="filter-label">狀態：</span>
+        <div class="filter-buttons" id="statusButtons"></div>
+      </div>
+
+      <div class="toolbar">
+        <input id="keywordInput" class="pill-input" placeholder="搜尋題幹、單元、詳解關鍵字">
+        <label class="toggle"><input type="checkbox" id="hideGreen"> 隱藏 🟢 已經會</label>
+        <label class="toggle"><input type="checkbox" id="examMode"> 歷屆整份模式</label>
+      </div>
+    </section>
+
+    <section class="stats" id="stats" style="display:none">
+      <div class="stats-main">共篩選出 <span id="countAll">0</span> 題</div>
+      <div class="stats-details">
+        <span>🔴 <b id="countRed">0</b></span>
+        <span>🟡 <b id="countYellow">0</b></span>
+        <span>🟢 <b id="countGreen">0</b></span>
+        <span>⚪ <b id="countWhite">0</b></span>
+      </div>
+    </section>
+
+    <section id="quizContainer">
+      <div class="empty-state">題庫載入中……</div>
+    </section>
+    <button id="loadMoreBtn" class="action-btn load-more" style="display:none">載入更多</button>
+
+    <section class="data-management">
+      <p>學習紀錄保存在本機瀏覽器，可匯出備份；換電腦或換瀏覽器時可匯入。</p>
+      <button class="data-btn" id="exportBtn">📥 匯出紀錄</button>
+      <button class="data-btn secondary" id="importBtn">📤 匯入紀錄</button>
+      <button class="data-btn ghost" id="clearBtn">清除紀錄</button>
+      <input id="importFile" type="file" accept=".json,application/json" hidden>
+    </section>
+  </main>
+
+  <script>
+    const DATA_FILES = ["data/111.json","data/112.json","data/113.json","data/114.json","data/115.json"];
+    const FILTERS = {
+      year:"all",
+      subject:"all",
+      type:"all",
+      ability:"all",
+      status:"all",
+      keyword:""
+    };
+    const CHOICES = {
+      year:["all","111","112","113","114","115"],
+      subject:["all","物理","化學","生物","地球科學","跨科"],
+      type:["all","單選題","多選題","混合題","非選題"],
+      ability:["all","圖表判讀","實驗設計","數據推論","計算估算","單位換算","選項判斷","閱讀理解"],
+      status:["all","red","yellow","green","white"]
+    };
+    const LABELS = {
+      all:"全部",
+      red:"🔴 不會",
+      yellow:"🟡 不太會",
+      green:"🟢 已經會",
+      white:"⚪ 未讀"
+    };
+    const ITEMS_PER_PAGE = 12;
+    let allQuestions = [];
+    let filteredQuestions = [];
+    let renderedCount = 0;
+    let progress = safeJSON(localStorage.getItem("naturalProgress"), {});
+
+    function safeJSON(text, fallback){
+      try{return text ? JSON.parse(text) : fallback}catch(e){return fallback}
+    }
+    function esc(value){
+      return String(value ?? "").replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+    }
+    function normYear(value){
+      return String(value ?? "").replace(/[^\d]/g,"");
+    }
+    async function boot(){
+      setupFilters();
+      bindEvents();
+      await loadQuestions();
+    }
+    async function loadQuestions(){
+      const stamp = Date.now();
+      const results = await Promise.all(DATA_FILES.map(file =>
+        fetch(`${file}?t=${stamp}`).then(r => r.ok ? r.json() : null).catch(() => null)
+      ));
+      allQuestions = results.flatMap(data => Array.isArray(data?.questions) ? data.questions : []);
+      allQuestions.sort((a,b) => Number(normYear(a.year))-Number(normYear(b.year)) || Number(a.questionNumber||a.q_num||0)-Number(b.questionNumber||b.q_num||0));
+      renderQuestions(true);
+    }
+    function setupFilters(){
+      makeButtons("yearButtons","year");
+      makeButtons("subjectButtons","subject");
+      makeButtons("typeButtons","type");
+      makeButtons("abilityButtons","ability");
+      makeButtons("statusButtons","status");
+    }
+    function makeButtons(containerId, filter){
+      const box = document.getElementById(containerId);
+      box.innerHTML = CHOICES[filter].map(value => `<button class="tag-btn ${value==="all"?"active":""}" data-filter="${filter}" data-value="${esc(value)}">${esc(LABELS[value] || value)}</button>`).join("");
+    }
+    function bindEvents(){
+      document.body.addEventListener("click", e => {
+        const tag = e.target.closest(".tag-btn");
+        if(tag){
+          setFilter(tag.dataset.filter, tag.dataset.value);
+          return;
+        }
+        const reveal = e.target.closest("[data-reveal]");
+        if(reveal){
+          const el = document.getElementById(reveal.dataset.reveal);
+          if(el) el.style.display = "block";
+          reveal.style.display = "none";
+        }
+      });
+      document.getElementById("keywordInput").addEventListener("input", e => {
+        FILTERS.keyword = e.target.value.trim();
+        renderQuestions(true);
+      });
+      document.getElementById("hideGreen").addEventListener("change", () => renderQuestions(true));
+      document.getElementById("examMode").addEventListener("change", () => renderQuestions(true));
+      document.getElementById("loadMoreBtn").addEventListener("click", () => renderNext());
+      document.getElementById("exportBtn").addEventListener("click", exportProgress);
+      document.getElementById("importBtn").addEventListener("click", () => document.getElementById("importFile").click());
+      document.getElementById("importFile").addEventListener("change", importProgress);
+      document.getElementById("clearBtn").addEventListener("click", clearProgress);
+    }
+    function setFilter(filter, value){
+      FILTERS[filter] = value;
+      document.querySelectorAll(`.tag-btn[data-filter="${filter}"]`).forEach(btn => btn.classList.toggle("active", btn.dataset.value === value));
+      renderQuestions(true);
+    }
+    function matchArray(value, target){
+      const arr = Array.isArray(value) ? value : [value].filter(Boolean);
+      return arr.includes(target);
+    }
+    function questionTextBag(q){
+      return [
+        q.id,q.title,q.question,q.material,q.explanation,q.hint,
+        ...(q.subject||[]),...(q.unit||[]),...(q.abilityTags||[]),...(q.commonErrors||[])
+      ].join(" ").toLowerCase();
+    }
+    function applyFilters(){
+      const hideGreen = document.getElementById("hideGreen").checked;
+      const examMode = document.getElementById("examMode").checked;
+      filteredQuestions = allQuestions.filter(q => {
+        const status = progress[q.id] || "white";
+        if(hideGreen && status === "green") return false;
+        if(FILTERS.year !== "all" && normYear(q.year) !== FILTERS.year) return false;
+        if(FILTERS.subject !== "all" && !matchArray(q.subject, FILTERS.subject)) return false;
+        if(FILTERS.type !== "all" && q.type !== FILTERS.type) return false;
+        if(FILTERS.ability !== "all" && !matchArray(q.abilityTags, FILTERS.ability)) return false;
+        if(FILTERS.status !== "all" && status !== FILTERS.status) return false;
+        if(FILTERS.keyword && !questionTextBag(q).includes(FILTERS.keyword.toLowerCase())) return false;
+        if(examMode && FILTERS.year === "all") return false;
+        return true;
+      });
+    }
+    function renderQuestions(reset=false){
+      if(reset){
+        applyFilters();
+        renderedCount = 0;
+        document.getElementById("quizContainer").innerHTML = "";
+      }
+      updateStats();
+      renderNext();
+    }
+    function renderNext(){
+      const container = document.getElementById("quizContainer");
+      if(!filteredQuestions.length){
+        container.innerHTML = `<div class="empty-state">目前沒有符合條件的題目。<br><span class="small-note">若開啟「歷屆整份模式」，請先選定年份。</span></div>`;
+        document.getElementById("loadMoreBtn").style.display = "none";
+        return;
+      }
+      const batch = filteredQuestions.slice(renderedCount, renderedCount + ITEMS_PER_PAGE);
+      const frag = document.createDocumentFragment();
+      batch.forEach(q => frag.appendChild(renderCard(q)));
+      container.appendChild(frag);
+      renderedCount += batch.length;
+      const more = renderedCount < filteredQuestions.length;
+      document.getElementById("loadMoreBtn").style.display = more ? "block" : "none";
+      document.getElementById("loadMoreBtn").textContent = `載入更多（尚有 ${filteredQuestions.length-renderedCount} 題）`;
+      if(window.renderMathInElement){
+        renderMathInElement(container,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}]});
+      }
+    }
+    function renderCard(q){
+      const status = progress[q.id] || "white";
+      const card = document.createElement("article");
+      card.id = `card-${q.id}`;
+      card.className = `question-card card-status-${status}`;
+      const qNo = q.questionNumber || q.q_num || "";
+      const feedbackId = `feedback-${q.id}`;
+      card.innerHTML = `
+        <div class="status-selector">
+          ${statusButton(q.id,"white","⚪")}
+          ${statusButton(q.id,"red","🔴")}
+          ${statusButton(q.id,"yellow","🟡")}
+          ${statusButton(q.id,"green","🟢")}
+        </div>
+        <div class="badge-group">
+          <span class="badge badge-year">${esc(q.year)}學測</span>
+          ${(q.subject||[]).map(s=>`<span class="badge badge-subject-${esc(s)} clickable" onclick="setFilter('subject','${esc(s)}')">${esc(s)}</span>`).join("")}
+          ${(q.unit||[]).map(u=>`<span class="badge clickable" onclick="document.getElementById('keywordInput').value='${esc(u)}';FILTERS.keyword='${esc(u)}';renderQuestions(true)">${esc(u)}</span>`).join("")}
+          <span class="badge clickable" onclick="setFilter('type','${esc(q.type)}')">${esc(q.type)}</span>
+          ${(q.abilityTags||[]).map(a=>`<span class="badge clickable" onclick="setFilter('ability','${esc(a)}')">${esc(a)}</span>`).join("")}
+        </div>
+        ${q.material ? `<div class="material-box"><b>題組材料</b><br>${formatText(q.material)}</div>` : ""}
+        <div class="question-text"><b>Q${esc(qNo)}.</b> ${formatText(q.question)}</div>
+        ${renderImages(q)}
+        <div class="options">${renderAnswerArea(q, feedbackId)}</div>
+        <div id="${feedbackId}" class="feedback-area">
+          ${q.hint ? `<div class="hint-box"><b>💡 破題提示</b><br>${formatText(q.hint)}</div>` : ""}
+          <div class="exp-box"><b>✅ 答案：${formatAnswer(q.answer)}</b><br>${formatText(q.explanation || "尚未撰寫詳解。")}</div>
+          ${Array.isArray(q.commonErrors)&&q.commonErrors.length ? `<div class="wrong-box"><b>常錯點</b><ul>${q.commonErrors.map(x=>`<li>${formatText(x)}</li>`).join("")}</ul></div>` : ""}
+          ${q.rubric ? `<div class="rubric-box"><b>評分規準／參考標準</b><br>${formatText(q.rubric)}</div>` : ""}
+        </div>
+      `;
+      return card;
+    }
+    function statusButton(id, status, icon){
+      const active = (progress[id] || "white") === status ? "active" : "";
+      return `<button class="status-btn ${active}" onclick="setStatus('${esc(id)}','${status}')" title="${esc(LABELS[status])}">${icon}</button>`;
+    }
+    function formatText(text){
+      return esc(text).replace(/\*\*(.*?)\*\*/g,"<b>$1</b>").replace(/\n/g,"<br>");
+    }
+    function formatAnswer(answer){
+      if(Array.isArray(answer)) return esc(answer.join(""));
+      return esc(answer);
+    }
+    function renderImages(q){
+      const imgs = q.images || q.diagram || q.image || [];
+      const arr = Array.isArray(imgs) ? imgs : [imgs].filter(Boolean);
+      return arr.map(src => `<div class="question-image"><img src="${esc(src)}" alt="題目附圖"></div>`).join("");
+    }
+    function renderAnswerArea(q, feedbackId){
+      if(q.type === "單選題"){
+        return (q.options||[]).map(opt => `<button class="option-btn" onclick="checkSingle(this,'${encodeURIComponent(String(q.answer))}','${feedbackId}')" data-val="${encodeURIComponent(opt)}">${formatText(opt)}</button>`).join("");
+      }
+      if(q.type === "多選題"){
+        const options = (q.options||[]).map(opt => `<button class="option-btn multi-btn" onclick="this.classList.toggle('selected')" data-val="${encodeURIComponent(opt)}">${formatText(opt)}</button>`).join("");
+        return options + `<div class="action-row"><button class="action-btn" onclick="checkMulti(this,'${q.id}','${encodeURIComponent(JSON.stringify(q.answer||[]))}')">確認答案</button></div>`;
+      }
+      return `
+        <textarea class="short-input" placeholder="可先在這裡寫下自己的推論、計算或非選題答案。"></textarea>
+        <div class="action-row"><button class="action-btn" data-reveal="${feedbackId}">看答案／詳解／評分標準</button></div>`;
+    }
+    function checkSingle(btn, correctEnc, feedbackId){
+      const correct = decodeURIComponent(correctEnc);
+      const buttons = btn.parentElement.querySelectorAll(".option-btn");
+      buttons.forEach(b => {
+        b.disabled = true;
+        const val = decodeURIComponent(b.dataset.val);
+        if(val === correct) b.classList.add("correct");
+      });
+      if(decodeURIComponent(btn.dataset.val) !== correct) btn.classList.add("wrong");
+      document.getElementById(feedbackId).style.display = "block";
+    }
+    function checkMulti(btn, qId, answerEnc){
+      const answers = JSON.parse(decodeURIComponent(answerEnc));
+      const box = btn.closest(".options");
+      box.querySelectorAll(".multi-btn").forEach(b => {
+        b.disabled = true;
+        const val = decodeURIComponent(b.dataset.val);
+        const selected = b.classList.contains("selected");
+        const correct = answers.includes(val);
+        if(correct) b.classList.add("correct");
+        if(selected && !correct) b.classList.add("wrong");
+      });
+      btn.style.display = "none";
+      document.getElementById(`feedback-${qId}`).style.display = "block";
+    }
+    function setStatus(id, status){
+      progress[id] = status;
+      localStorage.setItem("naturalProgress", JSON.stringify(progress));
+      const card = document.getElementById(`card-${id}`);
+      if(card){
+        card.className = `question-card card-status-${status}`;
+        card.querySelectorAll(".status-btn").forEach(b=>b.classList.remove("active"));
+        card.querySelector(`.status-btn[onclick*="'${status}'"]`)?.classList.add("active");
+      }
+      updateStats();
+      if(document.getElementById("hideGreen").checked && status === "green") renderQuestions(true);
+    }
+    function updateStats(){
+      const counts = {red:0,yellow:0,green:0,white:0};
+      filteredQuestions.forEach(q => counts[progress[q.id] || "white"]++);
+      document.getElementById("stats").style.display = "flex";
+      document.getElementById("countAll").textContent = filteredQuestions.length;
+      document.getElementById("countRed").textContent = counts.red;
+      document.getElementById("countYellow").textContent = counts.yellow;
+      document.getElementById("countGreen").textContent = counts.green;
+      document.getElementById("countWhite").textContent = counts.white;
+    }
+    function exportProgress(){
+      const blob = new Blob([JSON.stringify({schemaVersion:1,type:"naturalProgress",progress},null,2)],{type:"application/json"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "natural_progress_backup.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+    function importProgress(e){
+      const file = e.target.files?.[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try{
+          const data = JSON.parse(reader.result);
+          progress = data.progress || data;
+          localStorage.setItem("naturalProgress", JSON.stringify(progress));
+          renderQuestions(true);
+          alert("已匯入自然科學習紀錄。");
+        }catch(err){alert("匯入失敗：檔案格式不是 JSON。")}
+      };
+      reader.readAsText(file);
+    }
+    function clearProgress(){
+      if(!confirm("確定清除全部自然科紅黃綠紀錄？")) return;
+      progress = {};
+      localStorage.removeItem("naturalProgress");
+      renderQuestions(true);
+    }
+  </script>
+</body>
+</html>
