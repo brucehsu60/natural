@@ -194,7 +194,7 @@
 
   <script>
     const DATA_FILES = ["data/115.json","data/114.json","data/113.json","data/112.json","data/111.json"];
-    const RATE_FILES = [];
+    const RATE_FILES = ["data/115_rates.json"];
     const FILTERS = {
       examType:"all",
       year:"all",
@@ -260,7 +260,14 @@
       const results = await Promise.all(DATA_FILES.map(file =>
         fetch(`${file}?t=${stamp}`).then(r => r.ok ? r.json() : null).catch(() => null)
       ));
-      allQuestions = results.flatMap(data => Array.isArray(data?.questions) ? data.questions : []);
+      // 同時支援兩種題庫格式：
+      // 1. 直接 JSON 陣列：[ {...}, {...} ]
+      // 2. 包裝物件：{ "questions": [ {...}, {...} ] }
+      allQuestions = results.flatMap(data => {
+        if(Array.isArray(data)) return data;
+        if(Array.isArray(data?.questions)) return data.questions;
+        return [];
+      });
       await mergeRateFiles(stamp);
       sortQuestions();
       renderQuestions(true);
