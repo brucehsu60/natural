@@ -10,9 +10,13 @@
       "year": 113,
       "questionNumber": "示範1",
       "title": "地震波與地球內部",
-      "subject": ["地球科學"],
-      "unit": ["地震波", "地球內部構造"],
-      "abilityTags": ["閱讀理解", "數據推論"],
+      "subject": [
+        "地科"
+      ],
+      "unit": [
+        "地震波",
+        "地球內部構造"
+      ],
       "type": "單選題",
       "difficulty": "中",
       "material": "P 波可通過固體與液體，S 波只能通過固體。科學家發現某些區域無法接收到 S 波。",
@@ -31,7 +35,15 @@
         "只記地震波名詞，沒有用性質推論。",
         "把 P 波與 S 波可通過的介質混淆。"
       ],
-      "sourceNote": "示範題，非官方逐字題目"
+      "sourceNote": "示範題，非官方逐字題目",
+      "examCategory": "學測",
+      "category": "地科",
+      "chapter": "固體地球",
+      "skills": [
+        "閱讀理解",
+        "資料推論"
+      ]
     }
-  ]
+  ],
+  "examCategory": "學測"
 }

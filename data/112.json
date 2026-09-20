@@ -10,9 +10,13 @@
       "year": 112,
       "questionNumber": "示範1",
       "title": "酸鹼中和與莫耳數",
-      "subject": ["化學"],
-      "unit": ["酸鹼反應", "化學計量"],
-      "abilityTags": ["計算估算", "單位換算"],
+      "subject": [
+        "化學"
+      ],
+      "unit": [
+        "酸鹼反應",
+        "化學計量"
+      ],
       "type": "單選題",
       "difficulty": "基礎",
       "material": "某學生以 0.10 M 的 NaOH 溶液滴定 20.0 mL 的 HCl 溶液，達中和時共用去 10.0 mL NaOH。",
@@ -31,7 +35,12 @@
         "mL 沒有換成 L。",
         "把滴定體積 10.0 mL 誤當作 HCl 體積。"
       ],
-      "sourceNote": "示範題，非官方逐字題目"
+      "sourceNote": "示範題，非官方逐字題目",
+      "examCategory": "學測",
+      "category": "化學",
+      "chapter": "反應與計量",
+      "skills": []
     }
-  ]
+  ],
+  "examCategory": "學測"
 }
