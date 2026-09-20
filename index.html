@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>學測自然歷屆題庫訓練室 V1</title>
+  <title>學測自然歷屆題庫訓練室</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="boot()"></script>
@@ -18,7 +18,6 @@
     body{margin:0;background:linear-gradient(180deg,#eef6ff 0,#f8fafc 280px,var(--bg) 100%);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     header{max-width:1180px;margin:0 auto;padding:34px 18px 20px}
     h1{margin:0 0 10px;font-size:clamp(1.9rem,4vw,3.2rem);letter-spacing:.02em}
-    .subtitle{color:var(--muted);font-size:1.02rem;line-height:1.7;max-width:880px}
     .layout{max-width:1180px;margin:0 auto;padding:0 18px 46px}
     .panel,.question-card,.stats{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
     .panel{padding:18px;margin-bottom:16px}
@@ -30,11 +29,11 @@
     .tag-btn{border:1px solid var(--line);background:#fff;color:#334155;border-radius:999px;padding:7px 13px;cursor:pointer;font-weight:800;transition:.15s}
     .tag-btn:hover{transform:translateY(-1px);border-color:var(--brand)}
     .tag-btn.active{background:var(--brand);border-color:var(--brand);color:#fff}
-    .tag-btn[data-filter="subject"].active[data-value="物理"]{background:var(--physics);border-color:var(--physics)}
-    .tag-btn[data-filter="subject"].active[data-value="化學"]{background:var(--chem);border-color:var(--chem)}
-    .tag-btn[data-filter="subject"].active[data-value="生物"]{background:var(--bio);border-color:var(--bio)}
-    .tag-btn[data-filter="subject"].active[data-value="地球科學"]{background:var(--earth);border-color:var(--earth)}
-    .tag-btn[data-filter="subject"].active[data-value="跨科"]{background:var(--cross);border-color:var(--cross)}
+    .tag-btn[data-filter="category"].active[data-value="物理"]{background:var(--physics);border-color:var(--physics)}
+    .tag-btn[data-filter="category"].active[data-value="化學"]{background:var(--chem);border-color:var(--chem)}
+    .tag-btn[data-filter="category"].active[data-value="生物"]{background:var(--bio);border-color:var(--bio)}
+    .tag-btn[data-filter="category"].active[data-value="地科"]{background:var(--earth);border-color:var(--earth)}
+    .tag-btn[data-filter="category"].active[data-value="跨科"]{background:var(--cross);border-color:var(--cross)}
     .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
     .toggle{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;color:#334155;font-weight:800}
     .stats{padding:14px 16px;margin-bottom:14px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
@@ -55,6 +54,7 @@
     .badge-subject-物理{background:#ede9fe;color:#5b21b6}
     .badge-subject-化學{background:#ffedd5;color:#9a3412}
     .badge-subject-生物{background:#dcfce7;color:#166534}
+    .badge-subject-地科{background:#e0f2fe;color:#075985}
     .badge-subject-地球科學{background:#e0f2fe;color:#075985}
     .badge-subject-跨科{background:#e2e8f0;color:#334155}
     .question-text{font-size:1.08rem;line-height:1.85;margin:8px 0 12px;white-space:pre-wrap}
@@ -92,15 +92,17 @@
 </head>
 <body>
   <header>
-    <h1>學測自然歷屆題庫訓練室 V1</h1>
-    <div class="subtitle">
-      這是可放到 GitHub Pages 的自然科歷屆網站雛形：保留數學站的題庫篩選與紅黃綠熟練度，加入英文閱讀式題組材料、國寫式提示／評分規準，適合逐年匯入 111～115 學測自然。
-    </div>
+    <h1>學測自然歷屆題庫訓練室</h1>
   </header>
 
   <main class="layout">
     <section class="panel">
       <div class="panel-title">🔎 題庫篩選</div>
+
+      <div class="filter-row">
+        <span class="filter-label">考試類別：</span>
+        <div class="filter-buttons" id="examTypeButtons"></div>
+      </div>
 
       <div class="filter-row">
         <span class="filter-label">年份：</span>
@@ -109,7 +111,12 @@
 
       <div class="filter-row">
         <span class="filter-label">科目：</span>
-        <div class="filter-buttons" id="subjectButtons"></div>
+        <div class="filter-buttons" id="categoryButtons"></div>
+      </div>
+
+      <div class="filter-row">
+        <span class="filter-label">章節：</span>
+        <div class="filter-buttons" id="chapterButtons"></div>
       </div>
 
       <div class="filter-row">
@@ -159,20 +166,31 @@
   </main>
 
   <script>
-    const DATA_FILES = ["data/111.json","data/112.json","data/113.json","data/114.json","data/115.json"];
+    const DATA_FILES = ["data/115.json","data/114.json","data/113.json","data/112.json","data/111.json"];
     const FILTERS = {
+      examType:"all",
       year:"all",
-      subject:"all",
+      category:"all",
+      chapter:"all",
       type:"all",
       ability:"all",
       status:"all",
       keyword:""
     };
+    const TAXONOMY = {
+      "物理":["科學與測量","物質與基本力","物體的運動","電與磁","能量與量子"],
+      "化學":["物質與分離","原子與週期表","化學鍵與結構","反應與計量","溶液與生活"],
+      "生物":["細胞與代謝","生殖與遺傳","演化與多樣性"],
+      "地科":["太空與天文","固體地球","大氣與天氣","海洋與水文","氣候與環境"],
+      "跨科":["跨科題組"]
+    };
     const CHOICES = {
-      year:["all","111","112","113","114","115"],
-      subject:["all","物理","化學","生物","地球科學","跨科"],
+      examType:["all","學測","分科","舊學測","指考"],
+      year:["all","115","114","113","112","111"],
+      category:["all","物理","化學","生物","地科","跨科"],
+      chapter:["all",...Object.values(TAXONOMY).flat()],
       type:["all","單選題","多選題","混合題","非選題"],
-      ability:["all","圖表判讀","實驗設計","數據推論","計算估算","單位換算","選項判斷","閱讀理解"],
+      ability:["all","實驗與變因","圖表判讀","資料推論","閱讀理解","綜合跨科","科技社會"],
       status:["all","red","yellow","green","white"]
     };
     const LABELS = {
@@ -212,8 +230,10 @@
       renderQuestions(true);
     }
     function setupFilters(){
+      makeButtons("examTypeButtons","examType");
       makeButtons("yearButtons","year");
-      makeButtons("subjectButtons","subject");
+      makeButtons("categoryButtons","category");
+      makeButtons("chapterButtons","chapter");
       makeButtons("typeButtons","type");
       makeButtons("abilityButtons","ability");
       makeButtons("statusButtons","status");
@@ -250,8 +270,17 @@
     }
     function setFilter(filter, value){
       FILTERS[filter] = value;
+      if(filter === "category"){
+        FILTERS.chapter = "all";
+        renderChapterButtons(value);
+      }
       document.querySelectorAll(`.tag-btn[data-filter="${filter}"]`).forEach(btn => btn.classList.toggle("active", btn.dataset.value === value));
       renderQuestions(true);
+    }
+    function renderChapterButtons(category){
+      const values = category === "all" ? CHOICES.chapter : ["all", ...(TAXONOMY[category] || [])];
+      const box = document.getElementById("chapterButtons");
+      box.innerHTML = values.map(value => `<button class="tag-btn ${value==="all"?"active":""}" data-filter="chapter" data-value="${esc(value)}">${esc(LABELS[value] || value)}</button>`).join("");
     }
     function matchArray(value, target){
       const arr = Array.isArray(value) ? value : [value].filter(Boolean);
@@ -260,8 +289,24 @@
     function questionTextBag(q){
       return [
         q.id,q.title,q.question,q.material,q.explanation,q.hint,
-        ...(q.subject||[]),...(q.unit||[]),...(q.abilityTags||[]),...(q.commonErrors||[])
+        q.category,q.chapter,...subjectList(q),...(q.unit||[]),...skillList(q),...(q.commonErrors||[])
       ].join(" ").toLowerCase();
+    }
+    function examKind(q){
+      const raw = String(q.examCategory || q.examType || q.exam || "");
+      if(raw.includes("分科")) return "分科";
+      if(raw.includes("指考")) return "指考";
+      if(raw.includes("舊")) return "舊學測";
+      if(raw.includes("學測")) return "學測";
+      return "";
+    }
+    function subjectList(q){
+      if(Array.isArray(q.subject)) return q.subject.map(s => s === "地球科學" ? "地科" : s);
+      if(q.category) return [q.category === "地球科學" ? "地科" : q.category];
+      return [];
+    }
+    function skillList(q){
+      return Array.isArray(q.skills) ? q.skills : (Array.isArray(q.abilityTags) ? q.abilityTags : []);
     }
     function applyFilters(){
       const hideGreen = document.getElementById("hideGreen").checked;
@@ -269,10 +314,12 @@
       filteredQuestions = allQuestions.filter(q => {
         const status = progress[q.id] || "white";
         if(hideGreen && status === "green") return false;
+        if(FILTERS.examType !== "all" && examKind(q) !== FILTERS.examType) return false;
         if(FILTERS.year !== "all" && normYear(q.year) !== FILTERS.year) return false;
-        if(FILTERS.subject !== "all" && !matchArray(q.subject, FILTERS.subject)) return false;
+        if(FILTERS.category !== "all" && !matchArray(subjectList(q), FILTERS.category)) return false;
+        if(FILTERS.chapter !== "all" && q.chapter !== FILTERS.chapter) return false;
         if(FILTERS.type !== "all" && q.type !== FILTERS.type) return false;
-        if(FILTERS.ability !== "all" && !matchArray(q.abilityTags, FILTERS.ability)) return false;
+        if(FILTERS.ability !== "all" && !matchArray(skillList(q), FILTERS.ability)) return false;
         if(FILTERS.status !== "all" && status !== FILTERS.status) return false;
         if(FILTERS.keyword && !questionTextBag(q).includes(FILTERS.keyword.toLowerCase())) return false;
         if(examMode && FILTERS.year === "all") return false;
@@ -323,10 +370,11 @@
         </div>
         <div class="badge-group">
           <span class="badge badge-year">${esc(q.year)}學測</span>
-          ${(q.subject||[]).map(s=>`<span class="badge badge-subject-${esc(s)} clickable" onclick="setFilter('subject','${esc(s)}')">${esc(s)}</span>`).join("")}
+          ${subjectList(q).map(s=>`<span class="badge badge-subject-${esc(s)} clickable" onclick="setFilter('category','${esc(s)}')">${esc(s)}</span>`).join("")}
+          ${q.chapter ? `<span class="badge clickable" onclick="setFilter('chapter','${esc(q.chapter)}')">${esc(q.chapter)}</span>` : ""}
           ${(q.unit||[]).map(u=>`<span class="badge clickable" onclick="document.getElementById('keywordInput').value='${esc(u)}';FILTERS.keyword='${esc(u)}';renderQuestions(true)">${esc(u)}</span>`).join("")}
           <span class="badge clickable" onclick="setFilter('type','${esc(q.type)}')">${esc(q.type)}</span>
-          ${(q.abilityTags||[]).map(a=>`<span class="badge clickable" onclick="setFilter('ability','${esc(a)}')">${esc(a)}</span>`).join("")}
+          ${skillList(q).map(a=>`<span class="badge clickable" onclick="setFilter('ability','${esc(a)}')">${esc(a)}</span>`).join("")}
         </div>
         ${q.material ? `<div class="material-box"><b>題組材料</b><br>${formatText(q.material)}</div>` : ""}
         <div class="question-text"><b>Q${esc(qNo)}.</b> ${formatText(q.question)}</div>
