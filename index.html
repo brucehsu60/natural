@@ -193,7 +193,7 @@
   </main>
 
   <script>
-    const DATA_FILES = ["data/115.json","data/114.json","data/113.json","data/112.json","data/111.json"];
+    const DATA_FILES = [...Array.from({length: 28}, (_, i) => `data/${110 - i}.json`), "data/115.json","data/114.json","data/113.json","data/112.json","data/111.json"];
     const RATE_FILES = ["data/115_rates.json"];
     const FILTERS = {
       examType:"all",
@@ -218,6 +218,7 @@
     const CHOICES = {
       examType:["all","學測","分科","舊學測","指考"],
       year:["all","115","114","113","112","111"],
+      oldYear:["all",...Array.from({length:28},(_,i)=>String(110-i))],
       category:["all","物理","化學","生物","地科","跨科"],
       chapter:["all",...Object.values(TAXONOMY).flat()],
       type:["all","單選題","多選題","混合題","非選題"],
@@ -298,13 +299,20 @@
     }
     function setupFilters(){
       makeButtons("examTypeButtons","examType");
-      makeButtons("yearButtons","year");
+      renderYearButtons();
       makeButtons("categoryButtons","category");
       makeButtons("chapterButtons","chapter");
       makeButtons("typeButtons","type");
       makeButtons("abilityButtons","ability");
       makeButtons("rateButtons","rate");
       makeButtons("statusButtons","status");
+    }
+    function renderYearButtons(){
+      const isOld = FILTERS.examType === "舊學測";
+      const values = isOld ? CHOICES.oldYear : CHOICES.year;
+      const box = document.getElementById("yearButtons");
+      box.innerHTML = values.map(value => `<button class="tag-btn ${value===FILTERS.year?"active":""}" data-filter="year" data-value="${esc(value)}">${esc(value === "all" ? "全部" : value)}</button>`).join("");
+      if(!values.includes(FILTERS.year)) FILTERS.year = "all";
     }
     function makeButtons(containerId, filter){
       const box = document.getElementById(containerId);
@@ -346,6 +354,11 @@
     }
     function setFilter(filter, value){
       FILTERS[filter] = value;
+      if(filter === "examType"){
+        if(value === "舊學測" && !CHOICES.oldYear.includes(FILTERS.year)) FILTERS.year = "all";
+        if(value !== "舊學測" && !CHOICES.year.includes(FILTERS.year)) FILTERS.year = "all";
+        renderYearButtons();
+      }
       if(filter === "category"){
         FILTERS.chapter = "all";
         renderChapterButtons(value);
