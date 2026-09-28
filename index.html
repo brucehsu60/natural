@@ -240,6 +240,7 @@
       white:"⚪ 未讀"
     };
     const ITEMS_PER_PAGE = 12;
+    let noticeTimer = null;
     let allQuestions = [];
     let filteredQuestions = [];
     let renderedCount = 0;
@@ -260,6 +261,7 @@
       await loadQuestions();
     }
     async function loadQuestions(){
+      if(noticeTimer) window.clearTimeout(noticeTimer);
       const stamp = Date.now();
       const results = await Promise.all(DATA_FILES.map(async file => {
         try{
@@ -288,6 +290,9 @@
         notice.textContent = `110 年題庫已載入，共 ${questions110.length} 題。`;
       }
       notice.style.display = "block";
+      if(!file110?.error && Array.isArray(questions110)){
+        noticeTimer = window.setTimeout(() => { notice.style.display = "none"; }, 4000);
+      }
       await mergeRateFiles(stamp);
       sortQuestions();
       renderQuestions(true);
