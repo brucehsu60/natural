@@ -86,6 +86,8 @@
     .feedback-area{display:none;margin-top:12px}
     .short-input{width:100%;min-height:96px;border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;line-height:1.7}
     .empty-state{text-align:center;color:var(--muted);padding:42px;background:#fff;border:1px dashed var(--line);border-radius:18px}
+    .data-load-notice{margin:0 0 14px;padding:12px 16px;border-radius:12px;background:#ecfdf5;border:1px solid #86efac;color:#166534;font-weight:800}
+    .data-load-notice.error{background:#fff1f2;border-color:#fda4af;color:#9f1239}
     .data-management{margin-top:24px;text-align:center;color:var(--muted)}
     .load-more{display:block;margin:18px auto 0}
     .small-note{font-size:.88rem;color:var(--muted)}
@@ -178,6 +180,7 @@
       </div>
     </section>
 
+    <div id="dataLoadNotice" class="data-load-notice" role="status" style="display:none"></div>
     <section id="quizContainer">
       <div class="empty-state">題庫載入中……</div>
     </section>
@@ -258,17 +261,33 @@
     }
     async function loadQuestions(){
       const stamp = Date.now();
-      const results = await Promise.all(DATA_FILES.map(file =>
-        fetch(`${file}?t=${stamp}`).then(r => r.ok ? r.json() : null).catch(() => null)
-      ));
-      // 同時支援兩種題庫格式：
-      // 1. 直接 JSON 陣列：[ {...}, {...} ]
-      // 2. 包裝物件：{ "questions": [ {...}, {...} ] }
-      allQuestions = results.flatMap(data => {
+      const results = await Promise.all(DATA_FILES.map(async file => {
+        try{
+          const response = await fetch(`${file}?t=${stamp}`);
+          if(!response.ok) return {file,data:null,error:`HTTP ${response.status}`};
+          return {file,data:await response.json(),error:null};
+        }catch(error){
+          return {file,data:null,error:error?.message || "讀取失敗"};
+        }
+      }));
+      // 同時支援兩種題庫格式：直接 JSON 陣列或 { "questions": [...] }。
+      allQuestions = results.flatMap(({data}) => {
         if(Array.isArray(data)) return data;
         if(Array.isArray(data?.questions)) return data.questions;
         return [];
       });
+      const file110 = results.find(result => result.file === "data/110.json");
+      const questions110 = file110 && Array.isArray(file110.data) ? file110.data : file110?.data?.questions;
+      const notice = document.getElementById("dataLoadNotice");
+      if(file110?.error || !Array.isArray(questions110)){
+        notice.classList.add("error");
+        const reason = file110?.error || "JSON 格式不是題目陣列或 questions 陣列";
+        notice.textContent = `110 年題庫未載入（${reason}）。請確認 GitHub 上的檔案路徑為 data/110.json，且 Pages 已部署最新版本。`;
+      }else{
+        notice.classList.remove("error");
+        notice.textContent = `110 年題庫已載入，共 ${questions110.length} 題。`;
+      }
+      notice.style.display = "block";
       await mergeRateFiles(stamp);
       sortQuestions();
       renderQuestions(true);
@@ -421,7 +440,10 @@
       if(raw.includes("分科")) return "分科";
       if(raw.includes("指考")) return "指考";
       if(raw.includes("舊")) return "舊學測";
-      if(raw.includes("學測")) return "學測";
+      if(raw.includes("學測")){
+        const year = Number(normYear(q.year));
+        return Number.isFinite(year) && year > 0 && year <= 110 ? "舊學測" : "學測";
+      }
       return "";
     }
     function subjectList(q){
