@@ -1612,8 +1612,7 @@
     "material": "虱目魚原為海生魚類，學者研究發現，鹹水魚耐寒的特性可能與調鈣蛋白（Regucalcin, RGN）有關。RGN能與鈣離子結合，藉著鈣離子所調控的基因表現網絡，影響生物體對低溫的調適能力。圖 8 甲顯示不同組織中 RGN mRNA 的相對量；圖 8 乙顯示長期養殖在鹹水池和淡水池虱目魚在不同溫度下的 RGN mRNA 數量差異。",
     "question": "根據圖 8 甲及圖 8 乙的資訊，下列哪些正確？（應選 3 項）",
     "images": [
-      "images/114-NS-37-39-1.png",
-      "images/114-NS-37-39-2.png"
+      "images/114-NS-37-39.png"
     ],
     "options": [
       "(A)RGN 基因的表現量在器官之間有明顯的不同",
@@ -2057,9 +2056,7 @@
     "material": "已知平衡電壓為 $E = -\\frac{\\alpha T}{e} \\log(\\frac{n_\\text{內}}{n_\\text{外}})$，其中 $n_\\text{內}$ 與 $n_\\text{外}$ 分別為細胞內部與外部的離子濃度，$\\alpha > 0$ 為轉換常數，$T$ 為絕對溫度，$e$ 為基本電量。",
     "question": "下列選項的單位，哪些與能量相同？（應選 2 項）",
     "images": [
-      "images/114-NS-47-49-1.png",
-      "images/114-NS-47-49-2.png",
-      "images/114-NS-47-49-3.png"
+      "images/114-NS-47-49.png"
     ],
     "options": [
       "(A)$eE$",
@@ -2154,11 +2151,8 @@
     "material": "科學家探究細胞膜 $\\text{Na}^+$ 通道在導通狀況下的簡化直流電路，已知電壓 $V = E_{Na} + I_{Na} R_{Na}$。圖 16 為實驗分析結果的數據與趨勢線，縱軸為電流 $I_{Na}$，橫軸為電壓 $V$。",
     "question": "試分析並計算鈉離子通道的（a）平衡電壓 $E_{Na}$，（b）電阻值 $R_{Na}$。（4 分）",
     "images": [
-      "images/114-NS-47-49-1.png",
-      "images/114-NS-47-49-2.png",
-      "images/114-NS-47-49-3.png",
-      "images/114-NS-49-1.png",
-      "images/114-NS-49-2.png"
+      "images/114-NS-47-49.png",
+      "images/114-NS-49.png"
     ],
     "options": [],
     "answer": "（a）約 50 mV（合理讀值 45–55 mV）\n（b）約 150 Ω（合理讀值 125–175 Ω）",
